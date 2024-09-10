@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS sms (
+  id SERIAL PRIMARY KEY,
+  phone VARCHAR(14) NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(255) DEFAULT '',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
