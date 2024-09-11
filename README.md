@@ -1,35 +1,28 @@
 
 # Teste back-end Precato
-## Apêndice
+## Pré-requisitos
+Antes de começar, você vai precisar ter instalado em sua máquina:
+- Docker
+- Docker compose
+- Ngrok
 
-Decidi usar um docker-compose para subir BD mais facilmente. Como utilizei SQL puro no projeto, resolvi fazer as coisas de um jeito mais mão na massa. Para criar a tabela e um trigger, precisamos entrar no console, mais precisamente, dentro do contêiner do Docker para executarmos os códigos SQL.
-
-Para a atualização do status da mensagem, temos uma rota que faz essa alteração, mas para que essa rota funcionasse, precisamos ter uma rota/URL que seja disponível para a API externa conseguisse mandar um webhook, e como o projeto está rodando localmente, estou utilizando o ngrok para ter um jeito de expor a API para esse serviço externo.
-
-
+E uma conta no Twilio
 ## Variáveis de Ambiente
 
-Para executar esse projeto, você vai precisar adicionar as seguintes variáveis de ambiente no seu .env, todas estão presentes no .env.example
+Para executar esse projeto, você vai precisar adicionar as seguintes variáveis de ambiente no seu .env
 
-`POSTGRES_USER`=variável que utilizamos para setar o nosso usuário no docker
+```bash
+POSTGRES_USER=yourUser
+POSTGRES_PASSWORD=yourPassword
+POSTGRES_DB=yourDatabase
+URL_POSTGRES=postgres://<user>:<password>@localhost:5432/<database>
+PORT=3000
+TWILIO_ACCOUNT_SID=yourTwilioSID
+TWILIO_AUTH_TOKEN=yourTwilioAuthToken
+TWILIO_PHONE_NUMBER=+1234567890
+TWILIO_STATUS_CALLBACK_URL=<ngrok url>/status
 
-`POSTGRES_PASSWORD`=variável que utilizamos para setar a nossa senha no docker
-
-`POSTGRES_DB`=váriavel que utilizamos para setar qual o nome do nosso banco no docker
-
-`URL_POSTGRES`=variável que conecta ao contêiner do docker
-
-`PORT`=variável que comanda em qual porta voce deseja que a API se exponha
-
-`TWILIO_ACCOUNT_SID`=id da sua conta no twilio
-
-`TWILIO_AUTH_TOKEN`=token de autorização no twilio
-
-`TWILIO_PHONE_NUMBER`=número de telefone disponibilizado pelo twilio
-
-`TWILIO_STATUS_CALLBACK_URL`=url/rota para o twilio mandar mudanças de status das mensagens
-
-
+```
 ## Documentação da API
 
 #### Envia um SMS para o telefone desejado
@@ -42,6 +35,14 @@ Para executar esse projeto, você vai precisar adicionar as seguintes variáveis
 | :---------- | :--------- | :---------------------------------- |
 | `phone` | `string` | **Obrigatório**. Telefone que chegará o sms |
 | `message` | `string` | **Obrigatório**. Mensagem que chegara junto com sms |
+
+Exemplo de resposta:
+```http
+{
+	"message": "SMS Enviado!"
+}
+```
+
 
 #### Retorna as mudanças nos status das mensagens
 
@@ -62,40 +63,50 @@ Não precisamos enviar nada, e nem retornamos nada, essa é uma rota que a API e
 | `status` | `string` | **Obrigatório**. Status que quer visualizar - [ENVIADO, RECEBIDO, ERRO DE ENVIO, ''] |
 
 
+Exemplo de resposta:
+```http
+[
+  {
+    "id": 1,
+    "phone": "",
+    "message": "",
+    "status": "ENVIADO",
+    "messageId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx",
+    "created_at": "2024-09-11T12:00:00Z",
+    "updated_at": "2024-09-11T12:05:00Z"
+  }
+]
 
+```
 ## Rodando localmente
 
-Clone o projeto
+#### Clonar o repositório
 
 ```bash
   git clone https://github.com/luucassjooao/sms-challenge
-```
-
-Entre no diretório do projeto
-
-```bash
   cd sms-challenge
 ```
 
-Instale as dependências
+#### Instalar dependências
 
 ```bash
-  pnpm i
+  pnpm install
 ```
 
-Inicie um container docker com o docker-compose
+#### Executar Docker Compose
+Subir o container do PostgreSQL
 
 ```bash
   pnpm run docker:up
 ```
 
-Entrar dentro do container
-
+#### Criar Tabelas no Banco
+Executar o seguinte comando para entrar no container do PostgreSQL
 ```bash
-  docker exec -it sms_challenge psql -u <nome do úsario> -d <nome do DB>
+  docker exec -it sms_challenge psql -u <úsario> -d <DB>
 ```
 
-Executamos o script SQL
+Execute o script SQL para criar a tabela e o trigger
 
 ```bash
 CREATE TABLE IF NOT EXISTS sms (
@@ -121,20 +132,19 @@ BEFORE UPDATE ON sms
 FOR EACH ROW EXECUTE FUNCTION set_updated_at_trigger();
 ```
 
-iniciando o ngrok
-
+#### Expondo a API Externamente com Ngrok
+Inicie o Ngrok:
 ```bash
   ngrok http <port>
 ```
-
-setando a url + rota para alteração do status das mensagens
+Configure A URL do ngrok no .env
 
 ```bash
   TWILIO_STATUS_CALLBACK_URL=<ngrok url>/status
 ```
 
 
-Inicie o servidor
+#### Iniciar o servidor
 
 ```bash
   pnpm run dev

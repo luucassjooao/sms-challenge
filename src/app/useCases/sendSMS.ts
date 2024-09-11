@@ -12,13 +12,16 @@ interface IProps {
 export async function SendSms({ phone, message }: IProps): Promise<ISMS> {
   if (!phone || !message) throw new AppError('phone or message is missing!', 404);
 
-  const createSms = await SMSRepository.create(phone, message);
+  try {
+    const sms = await TwilioService.sendSms(phone, message);
 
-  const sms = await TwilioService.sendSms(phone, message);
-
-  return SMSRepository.updateStatusSMSById(
-    createSms.id,
-    statusMessages[sms.status],
-    sms.messageId
-  );
+    return SMSRepository.create(
+      phone,
+      message,
+      statusMessages[sms.status],
+      sms.messageId
+    );
+  } catch {
+    return SMSRepository.create(phone, message, 'ERRO DE ENVIO');
+  }
 }

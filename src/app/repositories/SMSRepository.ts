@@ -3,12 +3,12 @@ import { ISMS } from '../types/SMSType';
 import { ISMSRepository } from './ISMSRepository';
 
 class SMSRepository implements ISMSRepository {
-  async create(phone: string, message: string): Promise<ISMS> {
+  async create(phone: string, message: string, status?: string, messageId?: string): Promise<ISMS> {
     const [row] = await query(`
-      INSERT INTO sms(phone, message)
-      VALUES($1, $2)
+      INSERT INTO sms(phone, message, status, messageId)
+      VALUES($1, $2, $3, $4)
       RETURNING *
-    `, [phone, message]);
+    `, [phone, message, status, messageId]);
 
     return row;
   }
@@ -19,17 +19,6 @@ class SMSRepository implements ISMSRepository {
       SET status = $2
       WHERE messageId = $1
     `, [messageId, status]);
-
-    return row;
-  }
-
-  async updateStatusSMSById(id: number, status: string, messageId: string): Promise<ISMS> {
-    const [row] = await query(`
-      UPDATE sms
-      SET status = $2,
-      messageId = $3
-      WHERE id = $1
-    `, [id, status, messageId]);
 
     return row;
   }
