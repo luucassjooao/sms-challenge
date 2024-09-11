@@ -9,7 +9,7 @@ class SMSController {
 
     const sendSMS = await SendSms({phone, message});
 
-    return response.status(201).json({ message: 'SMS Enviado!', sendSMS });
+    return response.status(201).json({ message: sendSMS.message, sms: sendSMS.sms });
   }
 
   async receiveNewStatusOfSMS(request: Request, response: Response) {

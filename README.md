@@ -39,7 +39,16 @@ TWILIO_STATUS_CALLBACK_URL=<ngrok url>/status
 Exemplo de resposta:
 ```http
 {
-	"message": "SMS Enviado!"
+	"message": "SMS Enviado!",
+	"sendSMS": {
+		"id": 2,
+		"phone": "+5531983051474",
+		"message": "M10",
+		"status": "ERRO DE ENVIO",
+		"messageid": null,
+		"created_at": "2024-09-11T14:44:48.666Z",
+		"updated_at": "2024-09-11T14:44:48.666Z"
+	}
 }
 ```
 
