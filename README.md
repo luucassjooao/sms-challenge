@@ -4,9 +4,6 @@
 Antes de começar, você vai precisar ter instalado em sua máquina:
 - Docker
 - Docker compose
-- Ngrok
-
-E uma conta no Twilio
 ## Variáveis de Ambiente
 
 Para executar esse projeto, você vai precisar adicionar as seguintes variáveis de ambiente no seu .env
@@ -17,10 +14,6 @@ POSTGRES_PASSWORD=yourPassword
 POSTGRES_DB=yourDatabase
 URL_POSTGRES=postgres://<user>:<password>@localhost:5432/<database>
 PORT=3000
-TWILIO_ACCOUNT_SID=yourTwilioSID
-TWILIO_AUTH_TOKEN=yourTwilioAuthToken
-TWILIO_PHONE_NUMBER=+1234567890
-TWILIO_STATUS_CALLBACK_URL=<ngrok url>/status
 
 ```
 ## Documentação da API
@@ -41,11 +34,10 @@ Exemplo de resposta:
 {
 	"message": "SMS Enviado!",
 	"sendSMS": {
-		"id": 2,
-		"phone": "+5531983051474",
-		"message": "M10",
-		"status": "ERRO DE ENVIO",
-		"messageid": null,
+		"id": 1,
+		"phone": "+5531999999999",
+		"message": "oi",
+		"status": "",
 		"created_at": "2024-09-11T14:44:48.666Z",
 		"updated_at": "2024-09-11T14:44:48.666Z"
 	}
@@ -58,8 +50,16 @@ Exemplo de resposta:
 ```http
   POST /status
 ```
+| Parâmetro   | Tipo       | Descrição                           |
+| :---------- | :--------- | :---------------------------------- |
+| `messageStatus` | `string` | **Obrigatório**. Novo Status da mensagem |
+| `messageId` | `number` | **Obrigatório**. Id da Mensagem que deve ser alterado |
 
-Não precisamos enviar nada, e nem retornamos nada, essa é uma rota que a API externa, envia o novo status da mensagem
+```http
+{
+	"message": "Status da mensagem atualizado"
+}
+```
 
 #### Retorna todos SMS enviados a 24 horas atrás por um status específico
 
@@ -80,7 +80,6 @@ Exemplo de resposta:
     "phone": "",
     "message": "",
     "status": "ENVIADO",
-    "messageId": "xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx",
     "created_at": "2024-09-11T12:00:00Z",
     "updated_at": "2024-09-11T12:05:00Z"
   }
@@ -123,7 +122,6 @@ CREATE TABLE IF NOT EXISTS sms (
   phone VARCHAR(14) NOT NULL,
   message TEXT NOT NULL,
   status VARCHAR(255) DEFAULT '',
-  messageId VARCHAR(255) DEFAULT '',
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -139,17 +137,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER sms_update_updated_at
 BEFORE UPDATE ON sms
 FOR EACH ROW EXECUTE FUNCTION set_updated_at_trigger();
-```
 
-#### Expondo a API Externamente com Ngrok
-Inicie o Ngrok:
-```bash
-  ngrok http <port>
-```
-Configure A URL do ngrok no .env
-
-```bash
-  TWILIO_STATUS_CALLBACK_URL=<ngrok url>/status
 ```
 
 
