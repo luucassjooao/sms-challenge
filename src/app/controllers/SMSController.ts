@@ -13,11 +13,11 @@ class SMSController {
   }
 
   async receiveNewStatusOfSMS(request: Request, response: Response) {
-    const { MessageStatus, MessageSid } = request.body;
+    const { messageStatus, messageId } = request.body;
 
-    await ReceiveNewStatusOfSMS({status: MessageStatus, messageId: MessageSid});
+    await ReceiveNewStatusOfSMS({status: messageStatus, messageId: messageId});
 
-    return response.status(204);
+    return response.status(200).json({ message: 'Status da mensagem atualizado' });
   }
 
   async getAllSMSByStatus(request: Request, response: Response) {
